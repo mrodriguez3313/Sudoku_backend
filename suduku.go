@@ -81,7 +81,7 @@ func (b *Board) checkRow(row []uint8) bool {
 
 // This function checks to see if a col contains the same number more than once
 // Parameters: idx of which col to check, array of numbers to check
-func checkCol(idx int, col []uint8) bool {
+func checkCol(col []uint8) bool {
 	history := [9]uint8{1, 2, 3, 4, 5, 6, 7, 8, 9}
 	for _, val := range col {
 		if history[val-1] == 0 {
@@ -113,8 +113,23 @@ func checkGrid(idx int, grid []uint8) bool {
 // options: G=Grid, R=Row, C=Col. + #1-9 to choose either Grid, Row, or Col
 func (b *Board) createSubArray(char string, num uint8) []uint8 {
 	char = strings.ToLower(char)
+	if num <= 0 || num >= 10 {
+		fmt.Printf("num out of bounds")
+	}
 	if char == "r" {
-		return (b.game_board[(num-1)*9 : ((num-1)*9)+9])
+		return b.game_board[(num-1)*9 : ((num-1)*9)+9]
+	}
+	if char == "c" {
+		tempArr := []uint8{}
+		for idx := num - 1; int(idx) < len(b.game_board); idx += 9 {
+			tempArr = append(tempArr, b.game_board[idx])
+		}
+		return tempArr
+	}
+	if char == "g" {
+		for idx := 0; int(idx) < len(b.game_board); idx += 9 {
+
+		}
 	}
 	return []uint8{0}
 }

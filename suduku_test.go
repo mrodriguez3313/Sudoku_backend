@@ -53,6 +53,36 @@ func TestCreateSubRow(t *testing.T) {
 	}
 }
 
+func TestCreateSubCol(t *testing.T) {
+	var tests = []struct {
+		name string
+		char string
+		val  uint8
+		want []uint8
+	}{
+		{`First_Col`, "c", 1, []uint8{1, 3, 0, 0, 0, 0, 9, 0, 0}},
+		{`Second_Row`, "c", 2, []uint8{7, 6, 0, 3, 0, 0, 0, 2, 0}},
+		{`Third_Row`, "c", 3, []uint8{9, 1, 0, 0, 0, 5, 1, 0, 0}},
+		{`Fourth_Row`, "c", 4, []uint8{9, 2, 0, 0, 0, 0, 2, 0, 0}},
+		{`Fifth_Row`, "c", 5, []uint8{5, 7, 0, 7, 0, 0, 3, 0, 0}},
+		{`Six_Row`, "c", 6, []uint8{4, 9, 0, 0, 0, 0, 4, 0, 0}},
+		{`Seventh_Row`, "c", 7, []uint8{2, 8, 0, 0, 0, 7, 5, 0, 0}},
+		{`Eighth_Row`, "c", 8, []uint8{3, 5, 0, 0, 0, 0, 0, 0, 0}},
+		{`Ninth_Row`, "c", 9, []uint8{6, 4, 0, 0, 0, 0, 0, 0, 9}},
+	}
+	for _, tt := range tests {
+		t.Run("Create Sub Cols", func(t *testing.T) {
+			result := test_board.createSubArray(tt.char, tt.val)
+			if len(result) != len(tt.want) {
+				t.Errorf("Slices are not equal size.. want:%d res:%d", len(tt.want), len(result))
+			}
+			if !reflect.DeepEqual(result, tt.want) {
+				t.Fatal("Slices not the same.. want: ", tt.want, "res: ", result)
+			}
+		})
+	}
+}
+
 func TestRowCheck(t *testing.T) {
 	var tests = []struct {
 		name string
