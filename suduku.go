@@ -127,9 +127,12 @@ func (b *Board) createSubArray(char string, num uint8) []uint8 {
 		return tempArr
 	}
 	if char == "g" {
-		for idx := 0; int(idx) < len(b.game_board); idx += 9 {
-
+		tempArr := []uint8{}
+		m := map[int]int{1: 0, 2: 3, 3: 6, 4: 27, 5: 30, 6: 33, 7: 54, 8: 57, 9: 60}
+		for idx := m[int(num)]; len(tempArr) < 9; idx += 9 {
+			tempArr = append(tempArr, b.game_board[idx], b.game_board[idx+1], b.game_board[idx+2])
 		}
+		return tempArr
 	}
 	return []uint8{0}
 }
