@@ -2,18 +2,20 @@ package main
 
 import (
 	// "crypto/rand"
-	"math/rand"
-	"math/big"
 	"fmt"
+	"math/big"
+	"math/rand"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 type Board struct {
-	game_board []uint8
+	game_board []int
 }
 
 var suduku = Board{
-	[]uint8{0, 0, 0, 0, 0, 0, 0, 0, 0,
+	[]int{0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -33,11 +35,12 @@ func main() {
 	
 	seeded := rand.NewSource(int64(bigUint))
 	r1 := rand.New(seeded)
-	randNum := uint8(r1.Intn(9)+1)
+	randNum := r1.Intn(9)+1
 
 	fmt.Println("psuedo-random: ", randNum)
 	
-	// suduku.fillBoard(0, randNum)
+	// Pass in the r1 seed.
+	suduku.fillBoard(0, randNum, []int{1,2,3,4,5,6,7,8,9})
 	suduku.printBoard()
 }
 
@@ -66,38 +69,50 @@ func (b *Board) printBoard() {
 
 // This recursive function will fill the whole grid
 // Parameters: starting index, rolling index, array
-func (b *Board) fillBoard(ri int, val uint8, tries uint8) {
+
+// pass in an array of allowed values respective to every square, this would avoid the need for a "tries" var 
+// && looping to check for every row & col. For this to work I need a way to reset values after every row, column & grid.
+
+// Pass in the seed value so I can keep getting random values from it
+// For this to work, i neeed to know when I have tried every value at least once & backtrack.
+func (b *Board) fillBoard(ri int, val int, allowed []int) {
 	// Closing condition should be:
 	// if every Col,Row,&Grid are solved
 	// Or I reached the end of the board??
 	if ri >= len(b.game_board) {
 		return
 	}
-	if tries >= 9 {
-		b.fillBoard(ri-1, val+1, 0)
-	}
-	if val >= 9 {
+	if val > 9 {
 		val = 1
 	}
-	// for idx, val := range b.game_board {
-	// 	b.game_board[ri] = val
-	// // 	// if bad row, backtrack
-	// 	for i, v := range b.game_board[9*(ri/9):ri] {
-	// 		if ri == v {
-	// 			b.fillBoard(ri, val+1)
-	// 		}
-	// 	}
-	// 	// if good, continue
-	// 	b.fillBoard(ri+1, val+1)
+	// // For loop necessary for backtracking
+	// for _, val := range b.game_board {
+		b.game_board[ri] = val
+	// 	// if bad row, try different value
+
+	// 	// if bad col, try different value
+
+	// 	// if bad grid, try different value
+
+		// if good, continue
+		b.fillBoard(ri+1, val+1, remove(allowed, b.game_board[ri]))
 	// }
 	// 1. Place a number then check.
-	// 2. Backtrack if the number placed has already been placed in the row before.
-	// if number has already been placed in the last i - remainder 9. Then backtrack.
+	// 2. If number has already been placed in the last 9*floor(ri/9). Then try a different number.
 	// 3. Backtrack if number placed has been seen in Col before.
 	// if number has been placed in last i - 9 places. Then backtrack.
 	// 4. Backtrack if number placed has been seen in 3x3 Grid
 	// Use array method. i  will give me their Grid location
 
+}
+
+func remove(arr []int, key int) []int {
+	for i := range arr {
+		if arr[i] == key {
+			return slices.Delete(arr, i, i+1)
+		}
+	}
+    return arr
 }
 
 // This function will do a final check of the whole grid
@@ -106,7 +121,7 @@ func (b *Board) checkFin() bool {
 	char := []string{"R", "C", "G"}
 	for i := 0; i < 3; i++ {
 		for j := 1; j <= 9; j++ {
-			if !b.check(b.createSubArray(char[i], uint8(j))) {
+			if _, valid := b.check([]int{1, 2, 3, 4, 5, 6, 7, 8, 9}, b.createSubArray(char[i], j)); !valid {
 				return false
 			}
 		}
@@ -116,25 +131,24 @@ func (b *Board) checkFin() bool {
 
 // This function checks to see if a row contains the same number more than once
 // Parameters: array of numbers to check
-func (b *Board) check(row []uint8) bool {
-	history := [9]uint8{1, 2, 3, 4, 5, 6, 7, 8, 9}
+func (b *Board) check(history[]int, row []int) ([]int, bool) {
 	for _, val := range row {
 		if val == 0 {
-			return false
+			return history, false
 		}
 		if history[val-1] == 0 {
-			return false
+			return history, false
 		}
 		if val == history[val-1] {
 			history[val-1] = 0
 		}
 	}
-	return true
+	return history, true
 }
 
 // This function will create sub-array out of desired selection
 // options: G=Grid, R=Row, C=Col. + #1-9 to choose either Grid, Row, or Col
-func (b *Board) createSubArray(char string, num uint8) []uint8 {
+func (b *Board) createSubArray(char string, num int) []int {
 	char = strings.ToLower(char)
 	if num <= 0 || num >= 10 {
 		fmt.Printf("num out of bounds")
@@ -143,18 +157,18 @@ func (b *Board) createSubArray(char string, num uint8) []uint8 {
 	case "r":
 		return b.game_board[(num-1)*9 : ((num-1)*9)+9]
 	case "c":
-		tempArr := []uint8{}
-		for idx := num - 1; int(idx) < len(b.game_board); idx += 9 {
+		tempArr := []int{}
+		for idx := num - 1; idx < len(b.game_board); idx += 9 {
 			tempArr = append(tempArr, b.game_board[idx])
 		}
 		return tempArr
 	case "g":
-		tempArr := []uint8{}
+		tempArr := []int{}
 		m := map[int]int{1: 0, 2: 3, 3: 6, 4: 27, 5: 30, 6: 33, 7: 54, 8: 57, 9: 60}
-		for idx := m[int(num)]; len(tempArr) < 9; idx += 9 {
+		for idx := m[num]; len(tempArr) < 9; idx += 9 {
 			tempArr = append(tempArr, b.game_board[idx], b.game_board[idx+1], b.game_board[idx+2])
 		}
 		return tempArr
 	}
-	return []uint8{0}
+	return []int{0}
 }
