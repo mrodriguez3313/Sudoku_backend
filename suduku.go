@@ -85,14 +85,14 @@ func (b *Board) fillBoard(ri int, val int, allowed []int) {
 	if val > 9 {
 		val = 1
 	}
-	// // For loop necessary for backtracking
+	// For loop necessary for backtracking
 	// for _, val := range b.game_board {
 		b.game_board[ri] = val
-	// 	// if bad row, try different value
+	// if bad row, try different value
+	
+	// if bad col, try different value
 
-	// 	// if bad col, try different value
-
-	// 	// if bad grid, try different value
+	// if bad grid, try different value
 
 		// if good, continue
 		b.fillBoard(ri+1, val+1, remove(allowed, b.game_board[ri]))
@@ -100,19 +100,24 @@ func (b *Board) fillBoard(ri int, val int, allowed []int) {
 	// 1. Place a number then check.
 	// 2. If number has already been placed in the last 9*floor(ri/9). Then try a different number.
 	// 3. Backtrack if number placed has been seen in Col before.
-	// if number has been placed in last i - 9 places. Then backtrack.
+	// if number has been placed in last i - 9 places; for i > 0. Then try different number.
 	// 4. Backtrack if number placed has been seen in 3x3 Grid
-	// Use array method. i  will give me their Grid location
-
+	// Use array method. i will give me their Grid location
 }
 
-func remove(arr []int, key int) []int {
+func find(arr[]int, key int) (int, bool) {
 	for i := range arr {
 		if arr[i] == key {
-			return slices.Delete(arr, i, i+1)
+			return i, true
 		}
 	}
-    return arr
+	return -1, false
+}
+func remove(arr []int, key int) []int {
+	if i, exists := find(arr, key); exists {
+		return slices.Delete(arr, i, i+1)
+	}
+	return arr
 }
 
 // This function will do a final check of the whole grid
