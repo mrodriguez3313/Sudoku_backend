@@ -17,6 +17,19 @@ var test_board = Board{
 		0, 0, 0, 0, 0, 0, 0, 0, 9},
 }
 
+var complete_board = Board{
+	[]uint8{
+		1, 2, 3, 6, 7, 8, 9, 4, 5,
+		5, 8, 4, 2, 3, 9, 7, 6, 1,
+		9, 6, 7, 1, 4, 5, 3, 2, 8,
+		3, 7, 2, 4, 6, 1, 5, 8, 9,
+		6, 9, 1, 5, 8, 3, 2, 7, 4,
+		4, 5, 8, 7, 9, 2, 6, 1, 3,
+		8, 3, 6, 9, 2, 4, 1, 5, 7,
+		2, 1, 9, 8, 5, 7, 4, 3, 6,
+		7, 4, 5, 3, 1, 6, 8, 9, 2},
+}
+
 func TestPrint(t *testing.T) {
 	t.Run("PrintBoard", func(t *testing.T) {
 		test_board.printBoard()
@@ -127,10 +140,41 @@ func TestRowCheck(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run("Check Sub Row", func(t *testing.T) {
-			result := test_board.checkRow(tt.row)
+			result := test_board.check(tt.row)
 			if result != tt.want {
 				t.Error("Repeat number detected in row", tt.row)
 			}
 		})
 	}
+}
+
+// not tested thoroughly
+func TestColCheck(t *testing.T) {
+	var tests = []struct {
+		name string
+		col  []uint8
+		want bool
+	}{
+		{"Check correct", []uint8{1, 7, 9, 8, 5, 4, 2, 3, 6}, true},
+		// {"Check duplicate number", []uint8{1, 7, 7, 8, 5, 4, 2, 6, 6}, false},
+		// {"Check one zero", []uint8{1, 7, 0, 8, 5, 4, 2, 9, 6}, false},
+		// {"Check multiple zeros", []uint8{1, 7, 0, 8, 5, 4, 2, 0, 6}, false},
+		// {"Check all zeros", []uint8{0, 0, 0, 0, 0, 0, 0, 0, 0}, false},
+	}
+	for _, tt := range tests {
+		t.Run("Check Sub Row", func(t *testing.T) {
+			result := test_board.check(tt.col)
+			if result != tt.want {
+				t.Error("Repeat number detected in row", tt.col)
+			}
+		})
+	}
+}
+
+func TestCheckFin(t *testing.T) {
+	t.Run("Check Finale", func(t *testing.T) {
+		if !complete_board.checkFin() {
+			t.Error("Board is incomplete")
+		}
+	})
 }
